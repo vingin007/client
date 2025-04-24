@@ -14,10 +14,17 @@ final class CreateResponseMessage
         public readonly ?string $content,
         public readonly array $toolCalls,
         public readonly ?CreateResponseFunctionCall $functionCall,
+        public readonly ?string $reasoningContent,
     ) {}
 
     /**
-     * @param  array{role: string, content: ?string, function_call: ?array{name: string, arguments: string}, tool_calls: ?array<int, array{id: string, type: string, function: array{name: string, arguments: string}}>}  $attributes
+     * @param  array{
+     *   role: string,
+     *   content: string|null,
+     *   function_call: array{name: string, arguments: string}|null,
+     *   tool_calls: array<int, array{id: string, type: string, function: array{name: string, arguments: string}}>|null,
+     *   reasoning_content?: string|null
+     * }  $attributes
      */
     public static function from(array $attributes): self
     {
@@ -30,6 +37,7 @@ final class CreateResponseMessage
             $attributes['content'] ?? null,
             $toolCalls,
             isset($attributes['function_call']) ? CreateResponseFunctionCall::from($attributes['function_call']) : null,
+            $attributes['reasoning_content'] ?? null,
         );
     }
 
@@ -51,6 +59,9 @@ final class CreateResponseMessage
             $data['tool_calls'] = array_map(fn (CreateResponseToolCall $toolCall): array => $toolCall->toArray(), $this->toolCalls);
         }
 
+        if ($this->reasoningContent) {
+            $data['reasoning_content'] = $this->reasoningContent;
+        }
         return $data;
     }
 }
